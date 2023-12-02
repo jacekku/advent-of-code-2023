@@ -1,3 +1,4 @@
+console.time('s')
 const fs = require('node:fs');
 const readline = require('readline');
 
@@ -6,7 +7,6 @@ const rl = readline.createInterface({
 });
 
 let sum = 0
-console.time('s')
 rl.on('line', (line) => {
     const { rowId, games } = parseRow(line)
     sum += gamePower(rowId, games)

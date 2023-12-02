@@ -1,3 +1,4 @@
+console.time('s')
 const fs = require('node:fs');
 const readline = require('readline');
 
@@ -10,11 +11,11 @@ sum = 0
 rl.on('line', (line) => {
     out = parseRow(line)
     sum += out
-    console.log(sum)
 });
 
 rl.on('close', () => {
     console.log(sum)
+    console.timeEnd('s')
 })
 
 
