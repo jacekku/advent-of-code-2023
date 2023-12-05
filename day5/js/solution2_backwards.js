@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const readline = require('readline');
 
 const rl = readline.createInterface({
-    input: fs.createReadStream('../input'), crlfDelay: Infinity
+    input: fs.createReadStream('../input act'), crlfDelay: Infinity
 });
 rl.on('line', (line) => { eachLine(line) });
 rl.on('close', () => {
@@ -112,21 +112,29 @@ function onClose() {
         parser.temperatureToHumidity,
         parser.humidityToLocation
     ]
+    orderOfMaps.reverse()
     const seedRanges = parser.seeds
-    let min = Infinity
-    let minI = 0
-    for (const range of seedRanges) {
-        console.log(range)
-        for (let i = range.src; i < range.src + range.len; i++) {
-            location = orderOfMaps.reduce((value, arr) => findAndMap(arr, value), i)
-            if (location < min) {
-                min = location
-                minI = i
-            }
+    min = 0
+
+    while (true) {
+        out = orderOfMaps.reduce((value, arr) => reverseFindAndMap(arr, value), min)
+        if (isInRanges(out, seedRanges)) {
+            break
+        }
+        min++
+    }
+    console.log(min)
+}
+
+function isInRanges(value, ranges) {
+    for (const range of ranges) {
+        if (value >= range.src && value < range.src + range.len) {
+            return true
         }
     }
-    console.log(min, minI)
+    return false
 }
+
 /**
  * 
  * @param {AlmanacMap[]} arr 
@@ -137,4 +145,16 @@ function findAndMap(arr, value) {
     const found = arr.find(m => value >= m.src && value < m.src + m.len)
     if (!found) return value
     return (value - found.src) + found.dst
+}
+
+/**
+ * 
+ * @param {AlmanacMap[]} arr 
+ * @param {number} value 
+ * @returns number
+ */
+function reverseFindAndMap(arr, value) {
+    const found = arr.find(m => value >= m.dst && value < m.dst + m.len)
+    if (!found) return value
+    return (value - found.dst) + found.src
 }
