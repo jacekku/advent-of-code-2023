@@ -1,13 +1,14 @@
 console.time('s')
 const fs = require('node:fs');
 const readline = require('readline');
+const { Worker } = require("worker_threads");
 
 const rl = readline.createInterface({
-    input: fs.createReadStream('../input'), crlfDelay: Infinity
+    input: fs.createReadStream('../input act'), crlfDelay: Infinity
 });
 rl.on('line', (line) => { eachLine(line) });
-rl.on('close', () => {
-    onClose()
+rl.on('close', async () => {
+    await onClose()
     console.timeEnd('s')
     const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
 
@@ -102,7 +103,7 @@ function eachLine(line) {
     parser.parse(line)
 }
 
-function onClose() {
+async function onClose() {
     const orderOfMaps = [
         parser.seedToSoil,
         parser.soilToFertilizer,
@@ -113,26 +114,24 @@ function onClose() {
         parser.humidityToLocation
     ]
     const seedRanges = parser.seeds
+
     let min = Infinity
+
+    const workers = []
     for (const range of seedRanges) {
         console.log(range)
-        for (let i = range.src; i < range.src + range.len; i++) {
-            location = orderOfMaps.reduce((value, arr) => findAndMap(arr, value), i)
-            if (location < min) {
-                min = location
-            }
-        }
+        const worker = createWorker(JSON.parse(JSON.stringify({ range, orderOfMaps })))
+        workers.push(worker)
     }
-    console.log(min)
+
+    const res = await Promise.all(workers)
+    console.log(Math.min(...res))
 }
-/**
- * 
- * @param {AlmanacMap[]} arr 
- * @param {number} value 
- * @returns number
- */
-function findAndMap(arr, value) {
-    const found = arr.find(m => value >= m.src && value < m.src + m.len)
-    if (!found) return value
-    return (value - found.src) + found.dst
+
+
+function createWorker(data) {
+    return new Promise((resolve, reject) => {
+        const worker = new Worker("./worker.js", { workerData: data })
+        worker.on('message', data => resolve(data))
+    })
 }

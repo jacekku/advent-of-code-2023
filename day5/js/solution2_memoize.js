@@ -1,9 +1,10 @@
 console.time('s')
 const fs = require('node:fs');
+const { parse } = require('node:path');
 const readline = require('readline');
 
 const rl = readline.createInterface({
-    input: fs.createReadStream('../input'), crlfDelay: Infinity
+    input: fs.createReadStream('../input act'), crlfDelay: Infinity
 });
 rl.on('line', (line) => { eachLine(line) });
 rl.on('close', () => {
@@ -112,12 +113,17 @@ function onClose() {
         parser.temperatureToHumidity,
         parser.humidityToLocation
     ]
+
+    const cache = []
+
     const seedRanges = parser.seeds
     let min = Infinity
     for (const range of seedRanges) {
         console.log(range)
         for (let i = range.src; i < range.src + range.len; i++) {
+            if (cache[i]) continue
             location = orderOfMaps.reduce((value, arr) => findAndMap(arr, value), i)
+            cache[i] = location
             if (location < min) {
                 min = location
             }
