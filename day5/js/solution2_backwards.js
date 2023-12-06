@@ -115,7 +115,15 @@ function onClose() {
     orderOfMaps.reverse()
     const seedRanges = parser.seeds
     min = 0
-
+    let steps = 15000
+    while (true) {
+        out = orderOfMaps.reduce((value, arr) => reverseFindAndMap(arr, value), min)
+        if (isInRanges(out, seedRanges)) {
+            break
+        }
+        min += steps
+    }
+    min = min - steps
     while (true) {
         out = orderOfMaps.reduce((value, arr) => reverseFindAndMap(arr, value), min)
         if (isInRanges(out, seedRanges)) {
@@ -123,7 +131,9 @@ function onClose() {
         }
         min++
     }
+
     console.log(min)
+    console.log(min == 37384986)
 }
 
 function isInRanges(value, ranges) {
