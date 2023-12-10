@@ -25,31 +25,29 @@ rl.on('close', () => {
 })
 // ##########################
 
-const TIMES = []
-const DISTANCES = []
+let time;
+let distance;
 
 function eachLine(line) {
     line = line.replaceAll(" ", "")
-    console.log(line)
     if (line.startsWith("Time:")) {
-        TIMES.push(...line.split(":").slice(1).filter(Boolean).map(Number))
+        time = line.split(":").slice(1).filter(Boolean).map(Number)[0]
     } else {
-        DISTANCES.push(...line.split(":").slice(1).filter(Boolean).map(Number))
+        distance = line.split(":").slice(1).filter(Boolean).map(Number)[0]
     }
 }
 
 function onClose() {
-    console.log(TIMES, DISTANCES)
+    let sum = 0
 
-    const distances = []
-    TIMES.map((time, idx) => {
-        const d = []
-        for (let i = 0; i < time; i++) {
-            d.push((i * (time - i)) > DISTANCES[idx] ? 1 : null)
+    for (let i = 0; i < time; i++) {
+        if ((i * (time - i)) > distance) {
+            sum += 1
         }
-        distances.push(d.filter(Boolean).length)
-    })
-    console.log(distances.reduce((acc, next) => acc * next, 1))
+    }
+    console.log(sum)
+    console.log(sum == 43364472)
+
 }
 
 
